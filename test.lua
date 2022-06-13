@@ -292,6 +292,7 @@ local function serializer_test(is_json, preserve)
 		assert_preserves((random() - 0.5) * 2^random(-20, 20))
 	end
 	assert_preserves(2.9145637014948988508e-06)
+	assert_preserves(1.1496387980481e-07)
 	-- Simple tables
 	assert_preserves{hello = "world", welt = "hallo"}
 	assert_preserves{a = 1, b = "hallo", c = "true"}
@@ -350,7 +351,6 @@ end
 
 -- bluon
 do
-	-- TODO 1.1496387980481e-07 fails due to precision issues
 	serializer_test(false, function(object)
 		local rope = table.rope{}
 		local written, read, input
@@ -389,6 +389,7 @@ local spec = colorspec.from_number_rgba(0xDDCCBBAA)
 assertdump(table.equals(spec, {a = 0xAA, b = 0xBB, g = 0xCC, r = 0xDD}), spec)
 test_from_string("aliceblue", 0xf0f8ffff)
 test_from_string("aliceblue#42", 0xf0f8ff42)
+test_from_string("aliceblue#3", 0xf0f8ff33)
 test_from_string("#333", 0x333333FF)
 test_from_string("#694269", 0x694269FF)
 test_from_string("#11223344", 0x11223344)
@@ -469,3 +470,4 @@ do
 	p:close()
 	os.remove(path)
 end
+
