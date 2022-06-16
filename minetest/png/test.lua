@@ -72,13 +72,13 @@ for _, filename in pairs(minetest.get_dir_list(path, false)) do
 				break
 			end
 		end
-		
+
 		local basename = filename:sub(1, -5)
 		if not (files[filename].equals_pillow and files[filename].equals_imageio) then
 			for suffix, data in pairs{
 				[""] = png.data,
-				["_expected_iio"] = expected_iio_data,
-				["_expected_pillow"] = expected_pillow_data
+				["_expected_iio"] = expected_data.imageio,
+				["_expected_pillow"] = expected_data.pillow
 			} do
 				modlib.file.write(path .. "Comparison_ARGB8/" .. basename .. suffix .. ".png", modlib.minetest.encode_png(png.width, png.height, data, 9))
 			end
