@@ -16,3 +16,21 @@ License of `b3d/character.b3d`: CC BY-SA 3.0 (see `b3d/license.txt`)
 ---
 
 Repository on [GitHub](https://github.com/appgurueu/modlib_test).
+
+## Configuration
+
+<!--modlib:conf:2-->
+### `liquid_dir`
+
+Show directions of all flowingliquid nodes
+
+* Type: boolean
+* Default: `false`
+
+### `liquid_raycast`
+
+Show results of modlib's accurate liquid raycast
+
+* Type: boolean
+* Default: `false`
+<!--modlib:conf-->
