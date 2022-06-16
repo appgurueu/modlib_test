@@ -423,6 +423,7 @@ local function test_logfile(reference_strings)
 			assert(type(key) ~= "string")
 		end
 	end
+	os.remove(path)
 end
 test_logfile(true)
 test_logfile(false)
