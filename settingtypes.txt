@@ -1,0 +1,5 @@
+# Show directions of all flowingliquid nodes
+modlib_test.liquid_dir (Modlib test Liquid dir) bool false
+
+# Show results of modlib's accurate liquid raycast
+modlib_test.liquid_raycast (Modlib test Liquid raycast) bool false
