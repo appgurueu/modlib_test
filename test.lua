@@ -134,11 +134,11 @@ do
 	for k = 0, 100 do
 		local sorted = {}
 		for i = 1, k do
-			sorted[i] = _G.math.random(1, 1000)
+			sorted[i] = random(1, 1000)
 		end
 		_G.table.sort(sorted)
 		for i = 1, 10 do
-			local pick = _G.math.random(-100, 1100)
+			local pick = random(-100, 1100)
 			local linear, binary = linear_search(sorted, pick), table.binary_search(sorted, pick)
 			-- If numbers appear twice (or more often), the indices may differ, as long as the number is the same.
 			assert(linear == binary or (linear > 0 and sorted[linear] == sorted[binary]))
@@ -267,40 +267,136 @@ for _ = 1, 1000 do
 	assert(distance == min_distance)
 end
 
-local function serializer_test(is_json, preserve)
-	local function assert_preserves(obj)
-		local preserved = preserve(obj)
-		if obj ~= obj then -- nan
-			assert(preserved ~= preserved)
-		else
-			assert(table.equals_references(preserved, obj))
-		end
+-- Supports circular tables; does not support table keys
+-- Correctly checks whether a mapping of references ("same") exists
+-- Is significantly more efficient than assert.same
+-- TODO consider moving this to modlib.table.equals_*
+local function assert_same(a, b, same)
+	same = same or {}
+	if same[a] or same[b] then
+		assert(same[a] == b and same[b] == a)
+		return
 	end
+	if a == b then
+		return
+	end
+	if type(a) ~= "table" or type(b) ~= "table" then
+		assert(a == b)
+		return
+	end
+	same[a] = b
+	same[b] = a
+	local count = 0
+	for k, v in pairs(a) do
+		count = count + 1
+		assert(type(k) ~= "table")
+		assert_same(v, b[k], same)
+	end
+	for _ in pairs(b) do
+		count = count - 1
+	end
+	assert(count == 0)
+end
+
+local function serializer_test(is_json, preserve)
+	local function assert_preserves(value)
+		assert_same(value, preserve(value))
+	end
+
+	local atomics = is_json and {true, false} or {true, false, huge, -huge} -- no NaN or nil
 	-- TODO proper deep table comparison with nan support
-	for _, constant in pairs(is_json and {true, false} or {true, false, huge, -huge, 0/0}) do
-		assert_preserves(constant)
+	for _, atomic in pairs(atomics) do
+		assert_preserves(atomic)
+	end
+	local function atomic()
+		return atomics[random(1, #atomics)]
+	end
+	if not is_json then
+		local nan = preserve(0/0)
+		assert(nan ~= nan)
 	end
 	-- Strings
-	for i = 1, 1000 do
-		assert_preserves(_G.table.concat(table.repetition(_G.string.char(i % 256), i)))
+	local function charcodes(count)
+		if count == 0 then return end
+		return random(0, 0xFF), charcodes(count - 1)
+	end
+	local function str()
+		return _G.string.char(charcodes(random(0, 100)))
+	end
+	for _ = 1, 1e3 do
+		assert_preserves(str())
 	end
 	-- Numbers
-	for _ = 1, 1000 do
-		local int = random(-2^50, 2^50)
-		assert(int % 1 == 0)
-		assert_preserves(int)
-		assert_preserves((random() - 0.5) * 2^random(-20, 20))
+	for _, num in pairs{
+		0,
+		1e6,
+		1.8997128170018022e+41,
+		-2.8930711260329e+26,
+		1.315802651898e+24,
+		2.9145637014948988508e-06,
+		1.1496387980481e-07,
+	} do
+		assert_preserves(num)
 	end
-	assert_preserves(0)
-	assert_preserves(2.9145637014948988508e-06)
-	assert_preserves(1.1496387980481e-07)
-	assert_preserves(1e6)
+	local function int()
+		return random(-2^29, 2^29)
+	end
+	local function num()
+		if random() < 0.5 then return int() end
+		return int() * 2^random(-150, 150)
+	end
+	for _ = 1, 1e3 do
+		assert_preserves(num())
+	end
 	-- Simple tables
 	assert_preserves{hello = "world", welt = "hallo"}
 	assert_preserves{a = 1, b = "hallo", c = "true"}
 	assert_preserves{"hello", "hello", "hello"}
 	assert_preserves{1, 2, 3, true, false}
-	if is_json then return end
+
+	if is_json then return end -- The following circular / mixed / keyword tables are irrelevant to JSON testing
+
+	-- TODO test JSON serialization with fuzzed lists & dicts (but no mixed tables)
+	do -- fuzzing
+		local primitives = {atomic, num, str}
+		local function primitive()
+			return primitives[random(1, #primitives)]()
+		end
+		local function tab(max_actions)
+			local root = {}
+			local tables = {root}
+			local function random_table()
+				return tables[random(1, #tables)]
+			end
+			for _ = 1, random(1, max_actions) do
+				local tab = random_table()
+				local value
+				if random() < 0.5 then
+					if random() < 0.5 then
+						value = random_table()
+					else
+						value = {}
+						tables[#tables + 1] = value
+					end
+				else
+					value = primitive()
+				end
+				tab[random() < 0.5 and (#tab + 1) or primitive()] = value
+			end
+			return root
+		end
+		for _ = 1, 100 do
+			local fuzzed_table = tab(1e3)
+			assert_same(fuzzed_table, table.copy(fuzzed_table))
+			assert_preserves(fuzzed_table)
+		end
+	end
+
+	function assert_preserves(table)
+		-- Some of the below tables use table keys, which the simple assert_same doesn't support
+		assert(modlib.table.equals_references(table, preserve(table)))
+	end
+
 	local circular = {}
 	circular[circular] = circular
 	circular[1] = circular
