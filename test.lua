@@ -448,7 +448,6 @@ do
 end
 
 -- bluon
--- TODO modlib.binary testing (somewhat transitively tested through bluon)
 do
 	serializer_test(false, function(object)
 		local rope = table.rope{}
@@ -461,6 +460,53 @@ do
 		assert(not remaining)
 		return read
 	end)
+end
+
+do -- binary tests: float reading & writing
+	local function write_string(func, num)
+		local bytes = {}
+		func(function(byte) bytes[#bytes + 1] = byte end, num)
+		return _G.string.char(unpack(bytes))
+	end
+	local function read_string(func, str)
+		local i = 0
+		return func(function() i = i + 1; return str:byte(i) end)
+	end
+	local function preserve_func(funcname)
+		local write, read = binary["write_" .. funcname], binary["read_" .. funcname]
+		return function(num)
+			return read_string(read, write_string(write, num))
+		end
+	end
+	local preserve_single, preserve_double = preserve_func"single", preserve_func"double"
+	for _, preserve in pairs{preserve_single, preserve_double} do
+		assert(preserve(0) == 0)
+		assert(preserve(1e9) == 1e9)
+		assert(preserve(huge) == huge)
+		assert(preserve(-huge) == -huge)
+		local nan = preserve(0/0)
+		assert(nan ~= nan)
+		-- Test 32-bit floats
+		for _ = 1, 1e3 do
+			local int = random(-2^23, 2^23)
+			assert(preserve(int) == int)
+			local float = int * 2^random(-100, 100)
+			assert(preserve(float) == float)
+		end
+		-- Test subnormal numbers
+		for _ = 1, 1e3 do
+			local subnormal = random(-2^8, 2^8) * 2^random(-137, -127)
+			assert(preserve(subnormal) == subnormal)
+		end
+	end
+	-- Test 64-bit doubles
+	for _ = 1, 1e3 do
+		local int = (math.random() < 0.5 and -1 or 1) * random(0, 2^26) * 2^26 + random(0, 2^26 - 1)
+		assert(preserve_double(int) == int)
+		local float = int * 2^random(-1000, 1000)
+		assert(preserve_double(float) == float)
+	end
+	-- TODO test against other implementations (binarystream etc.)
 end
 
 do
