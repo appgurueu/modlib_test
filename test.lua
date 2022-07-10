@@ -1,5 +1,5 @@
 -- ensure modlib API isn't leaking into global environment
-assert(modlib.bluon.assert ~= assert)
+assert(modlib.bluon.assert == nil)
 
 local random, huge = math.random, math.huge
 local parent_env = getfenv(1)
@@ -11,8 +11,8 @@ setfenv(1, setmetatable({}, {
 		end
 		return parent_env[key]
 	end,
-	__newindex = function(_, key, value)
-		error(dump{key = key, value = value})
+	__newindex = function()
+		error("attempt to index test environment")
 	end
 }))
 
@@ -30,6 +30,29 @@ do
 		assert(math.log(2^i) == _G.math.log(2^i))
 		assert(math.log(2^i, 2) == log)
 	end
+	-- random tests
+	local n = 1e6
+	local function test_avg(min, max, int, ...)
+		local sum = 0
+		local func = math[int and "randint" or "random"]
+		for _ = 1, n do
+			local r = func(...)
+			assert(r >= min)
+			if int then
+				assert(r <= max)
+			else
+				assert(r < max)
+			end
+			sum = sum + r
+		end
+		assert((sum/n - (min + max)/2) / (max - min) < 1e-3)
+	end
+	test_avg(0, 1, false)
+	test_avg(0, 42, false, 42)
+	test_avg(1e3, 1e6, false, 1e3, 1e6)
+	test_avg(0, 2^53 - 1, true)
+	test_avg(0, 42, true, 42)
+	test_avg(1e3, 1e6, true, 1e3, 1e6)
 end
 
 -- func
