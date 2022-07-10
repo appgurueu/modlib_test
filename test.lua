@@ -641,7 +641,7 @@ test_logfile(false)
 -- SQLite3
 do
 	local sqlite3 = persistence.sqlite3()
-	local path = mod.get_resource("modlib", "database.test.sqlite3")
+	local path = mod.get_resource"database.test.sqlite3"
 	local p = sqlite3.new(path, {})
 	p:init()
 	p:rewrite()
