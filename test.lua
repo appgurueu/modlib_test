@@ -94,6 +94,52 @@ do
 	assert(nilget({a = {}}, "a", "b", "c") == nil)
 	assert(nilget(nil, "a", "b", "c") == nil)
 	assert(nilget(nil, "a", nil, "c") == nil)
+	do
+		local deepset = table.deepset
+		local t = {}
+		deepset(t, "a", 1)
+		deepset(t, "b", "c", "d", 2)
+		deepset(t, "b", "c", "e", 3)
+		assert(table.equals_noncircular(t, {a = 1, b = {c = {d = 2, e = 3}}}))
+	end
+	do
+		assert(table.count_equals({}, 0))
+		assert(table.count_equals({1}, 1))
+		assert(table.count_equals({[false] = 1, [true] = 2}, 2))
+		assert(table.count_equals({1, 2, 3}, 3))
+		assert(not table.count_equals({a = 1, b = 2}, 0))
+		assert(not table.count_equals({}, 1))
+		assert(not table.count_equals({1, 2, 3, 4, 5}, 3))
+		assert(not table.count_equals({1, 2, 3, 4, 5}, 6))
+	end
+	do
+		local t = {
+			"some", "list", "items";
+			[huge] = 1, [-huge] = 2,
+			[false] = 3, [true] = 4,
+			str = 5, str_2 = 6,
+			[0] = 7, [0.999999] = 8,
+			-- can't test [len + x] = y since that would make len + x a valid len
+		}
+		for k, v in table.hpairs(t) do
+			assert(t[k] == v)
+			t[k] = nil
+		end
+		assert(table.equals_noncircular(t, {"some", "list", "items"}))
+	end
+	do
+		assert(modlib.table.equals_noncircular(modlib.table.merge({
+			a = {1, 2},
+			b = 2,
+		}, {
+			a = {nil, nil, 3, 4},
+			c = 3
+		}), {
+			a = {1, 2, 3, 4},
+			b = 2,
+			c = 3
+		}))
+	end
 	local rope = table.rope{}
 	rope:write"hello"
 	rope:write" "
