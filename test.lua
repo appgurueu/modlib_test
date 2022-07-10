@@ -547,7 +547,7 @@ do -- binary tests: float reading & writing
 	end
 	-- Test 64-bit doubles
 	for _ = 1, 1e3 do
-		local int = (math.random() < 0.5 and -1 or 1) * random(0, 2^26) * 2^26 + random(0, 2^26 - 1)
+		local int = (random() < 0.5 and -1 or 1) * random(0, 2^26) * 2^26 + random(0, 2^26 - 1)
 		assert(preserve_double(int) == int)
 		local float = int * 2^random(-1000, 1000)
 		assert(preserve_double(float) == float)
@@ -595,7 +595,7 @@ local function test_logfile(reference_strings)
 	assert(logfile.root.root_preserved)
 	logfile.root = {a_longer_string = "test"}
 	logfile:rewrite()
-	logfile:set_root({a = 1}, {b = 2, c = 3, d = _G.math.huge, e = -_G.math.huge, ["in"] = "keyword"})
+	logfile:set_root({a = 1}, {b = 2, c = 3, d = huge, e = -huge, ["in"] = "keyword"})
 	local circular = {}
 	circular[circular] = circular
 	logfile:set_root(circular, circular)
@@ -603,7 +603,7 @@ local function test_logfile(reference_strings)
 	logfile:init()
 	assert(table.equals_references(logfile.root, {
 		a_longer_string = "test",
-		[{a = 1}] = {b = 2, c = 3, d = _G.math.huge, e = -_G.math.huge, ["in"] = "keyword"},
+		[{a = 1}] = {b = 2, c = 3, d = huge, e = -huge, ["in"] = "keyword"},
 		[circular] = circular,
 	}))
 	if not reference_strings then
