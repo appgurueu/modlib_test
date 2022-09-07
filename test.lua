@@ -57,7 +57,6 @@ end
 
 -- func
 do
-	assert(func.aggregate(func.add, 1, 2, 3) == 6)
 	local called = false
 	local function fun(arg)
 		assert(arg == "test")
@@ -225,6 +224,28 @@ do
 			assert(linear == binary or (linear > 0 and sorted[linear] == sorted[binary]))
 		end
 	end
+end
+
+-- vararg
+do
+	local pack = vararg.pack
+
+	assert(vararg.aggregate(func.add, 0, 1, 2, 3) == 6)
+	assert(pack(1, 2, 3):aggregate(func.add, 0) == 6)
+
+	local va = pack(1, nil, 2)
+	local a, b, c = va:unpack()
+	assert(a == 1 and b == nil and c == 2)
+	assert(va:select(2) == nil)
+	assert(select("#", va:select(4)) == 0)
+	local n = 0
+	for i, v in va:ipairs() do assert(va:select(i) == v); n = n + 1 end
+	assert(n == 3)
+	assert(va:equals(pack(1, nil, 2)))
+	assert(not va:equals(pack(1)))
+	assert(pack(1) ~= pack(2))
+	assert(va:concat(pack(3, nil, 4)) == pack(1, nil, 2, 3, nil, 4))
+	assert(va .. pack(3, nil, 4) == pack(1, nil, 2, 3, nil, 4))
 end
 
 -- heaps
