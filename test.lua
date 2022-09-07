@@ -57,24 +57,6 @@ end
 
 -- func
 do
-	local tab = {a = 1, b = 2}
-	local function check_entry(key, value)
-		assert(tab[key] == value)
-		tab[key] = nil
-	end
-	func.iterate(check_entry, pairs(tab))
-	assert(next(tab) == nil)
-
-	tab = {a = 1, b = 2}
-	local function pairs_callback(callback, tab)
-		for k, v in pairs(tab) do
-			callback(k, v)
-		end
-	end
-	for k, v in func.for_generator(pairs_callback, tab) do
-		check_entry(k, v)
-	end
-	assert(next(tab) == nil)
 	assert(func.aggregate(func.add, 1, 2, 3) == 6)
 	local called = false
 	local function fun(arg)
@@ -86,6 +68,36 @@ do
 	local memo = func.memoize(fun)
 	assert(memo"test" == false)
 	assert(memo.test == false)
+end
+
+-- iterator
+do
+	local range = iterator.range
+	assert(iterator.aggregate(func.add, 0, range(1, 3)) == 6)
+	assert(iterator.sum(range(1, 3)) == 6)
+	assert(iterator.min(func.lt, range(1, 3)) == 1)
+	assert(iterator.count(range(1, 3)) == 3)
+	assert(iterator.average(range(1, 3)) == 2)
+	assert(iterator.standard_deviation(range(1, 3)) == (2/3)^.5)
+
+	local tab = {a = 1, b = 2}
+	local function check_entry(key, value)
+		assert(tab[key] == value)
+		tab[key] = nil
+	end
+	iterator.foreach(check_entry, pairs(tab))
+	assert(next(tab) == nil)
+
+	tab = {a = 1, b = 2}
+	local function pairs_callback(callback, tab)
+		for k, v in pairs(tab) do
+			callback(k, v)
+		end
+	end
+	for k, v in iterator.for_generator(pairs_callback, tab) do
+		check_entry(k, v)
+	end
+	assert(next(tab) == nil)
 end
 
 -- string
