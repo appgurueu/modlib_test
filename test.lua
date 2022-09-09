@@ -377,6 +377,10 @@ for _ = 1, 1000 do
 	assert(distance == min_distance)
 end
 
+-- vector
+assert(vector.new{1, 2, 3}:reflect{0, 1, 0} == vector.new{1, -2, 3})
+assert(vector.new{1, 0, 0}:reflect(vector.normalize{1, 1, 0}):multiply_scalar(1e6):apply(math.round) == vector.new{0, -1e6, 0})
+
 -- Supports circular tables; does not support table keys
 -- Correctly checks whether a mapping of references ("same") exists
 -- Is significantly more efficient than assert.same
