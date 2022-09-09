@@ -99,8 +99,16 @@ do
 	assert(next(tab) == nil)
 end
 
--- string
-assert(string.escape_magic_chars"%" == "%%")
+-- text
+assert(text.escape_magic_chars"%" == "%%")
+assert(text.starts_with("abc", "a") == true)
+assert(text.starts_with("abc", "b") == false)
+assert(text.ends_with("abc", "c") == true)
+assert(text.ends_with("abc", "b") == false)
+assert(text.contains("abc", "b") == true)
+assert(text.contains("abc", "d") == false)
+assert(text.contains("abc", "a.c", false) == true) -- with pattern
+assert(text.trim_spacing("\t some text\n") == "some text")
 
 -- table
 do
@@ -530,12 +538,12 @@ do
 		for _, suffix in pairs{"x", ""} do
 			local function test(str, expected_str)
 				if type(expected_str) == "number" then
-					expected_str = text.utf8(expected_str)
+					expected_str = utf8.char(expected_str)
 				end
 				return assert(json:read_string('"' .. prefix .. str .. suffix .. '"') == prefix .. expected_str .. suffix)
 			end
 			test([[\uD834\uDD1E]], 0x1D11E)
-			test([[\uDD1E\uD834]], text.utf8(0xDD1E) .. text.utf8(0xD834))
+			test([[\uDD1E\uD834]], utf8.char(0xDD1E) .. utf8.char(0xD834))
 			test([[\uD834]], 0xD834)
 			test([[\uDD1E]], 0xDD1E)
 		end
