@@ -642,10 +642,10 @@ local colorspec = minetest.colorspec
 local function test_from_string(string, number)
 	local spec = colorspec.from_string(string)
 	local expected = colorspec.from_number_rgba(number)
-	assertdump(table.equals(spec, expected), {expected = expected, actual = spec})
+	assert(table.equals(spec, expected))
 end
 local spec = colorspec.from_number_rgba(0xDDCCBBAA)
-assertdump(table.equals(spec, {a = 0xAA, b = 0xBB, g = 0xCC, r = 0xDD}), spec)
+assert(table.equals(spec, {a = 0xAA, b = 0xBB, g = 0xCC, r = 0xDD}))
 test_from_string("aliceblue", 0xf0f8ffff)
 test_from_string("aliceblue#42", 0xf0f8ff42)
 test_from_string("aliceblue#3", 0xf0f8ff33)
