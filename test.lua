@@ -113,6 +113,10 @@ assert(table.equals(iterator.to_list(text.spliterator(" space   delimited \t\n s
 	{"", "space", "delimited", "stuff"}))
 assert(table.equals(iterator.to_list(text.spliterator(".dot.delimited.stuff.with.trailing.empty.", ".", true)),
 	{"", "dot", "delimited", "stuff", "with", "trailing", "empty", ""}))
+assert(table.equals(iterator.to_table(text.ichars("helloworld", #"hello" + 1)),
+	{[6] = "w", [7] = "o", [8] = "r", [9] = "l", [10] = "d"}))
+assert(table.equals(iterator.to_table(text.ibytes("hello")),
+	table.map({"h", "e", "l", "l", "o"}, _G.string.byte)))
 
 -- table
 do
