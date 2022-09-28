@@ -109,6 +109,10 @@ assert(text.contains("abc", "b") == true)
 assert(text.contains("abc", "d") == false)
 assert(text.contains("abc", "a.c", false) == true) -- with pattern
 assert(text.trim_spacing("\t some text\n") == "some text")
+assert(table.equals(iterator.to_list(text.spliterator(" space   delimited \t\n stuff", "%s+")),
+	{"", "space", "delimited", "stuff"}))
+assert(table.equals(iterator.to_list(text.spliterator(".dot.delimited.stuff.with.trailing.empty.", ".", true)),
+	{"", "dot", "delimited", "stuff", "with", "trailing", "empty", ""}))
 
 -- table
 do
