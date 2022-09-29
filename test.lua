@@ -117,6 +117,8 @@ assert(table.equals(iterator.to_table(text.ichars("helloworld", #"hello" + 1)),
 	{[6] = "w", [7] = "o", [8] = "r", [9] = "l", [10] = "d"}))
 assert(table.equals(iterator.to_table(text.ibytes("hello")),
 	table.map({"h", "e", "l", "l", "o"}, _G.string.byte)))
+assert(table.equals(iterator.to_list(text.lines("\r\n2\n\n4\r5\r\n")),
+	{"", "2", "", "4", "5"}))
 
 -- table
 do
@@ -221,10 +223,10 @@ do
 				return i
 			end
 			if val > value then
-				return -i
+				return nil, i
 			end
 		end
-		return -#list-1
+		return nil, #list
 	end
 
 	for k = 0, 100 do
@@ -233,11 +235,12 @@ do
 			sorted[i] = random(1, 1000)
 		end
 		_G.table.sort(sorted)
-		for i = 1, 10 do
+		for _ = 1, 10 do
 			local pick = random(-100, 1100)
-			local linear, binary = linear_search(sorted, pick), table.binary_search(sorted, pick)
+			local i, insertion_i = linear_search(sorted, pick)
+			local j, insertion_j = table.binary_search(sorted, pick)
 			-- If numbers appear twice (or more often), the indices may differ, as long as the number is the same.
-			assert(linear == binary or (linear > 0 and sorted[linear] == sorted[binary]))
+			assert(i == j or (i and sorted[i] == sorted[j]) and (insertion_i == insertion_j))
 		end
 	end
 end
