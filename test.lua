@@ -124,7 +124,9 @@ assert(table.equals(iterator.to_list(text.lines("\r\n2\n\n4\r5\r\n")),
 do
 	local tab = {}
 	tab[tab] = tab
+	setmetatable(tab, tab)
 	local table_copy = table.deepcopy(tab)
+	assert(getmetatable(table_copy) == getmetatable(tab))
 	assert(table_copy[table_copy] == table_copy)
 	assert(table.is_circular(tab))
 	assert(not table.is_circular{a = 1})
@@ -349,35 +351,8 @@ end
 assert(vector.new{1, 2, 3}:reflect{0, 1, 0} == vector.new{1, -2, 3})
 assert(vector.new{1, 0, 0}:reflect(vector.normalize{1, 1, 0}):multiply_scalar(1e6):apply(math.round) == vector.new{0, -1e6, 0})
 
--- Supports circular tables; does not support table keys
--- Correctly checks whether a mapping of references ("same") exists
--- Is significantly more efficient than assert.same
--- TODO consider moving this to modlib.table.equals_*
-local function assert_same(a, b, same)
-	same = same or {}
-	if same[a] or same[b] then
-		assert(same[a] == b and same[b] == a)
-		return
-	end
-	if a == b then
-		return
-	end
-	if type(a) ~= "table" or type(b) ~= "table" then
-		assert(a == b)
-		return
-	end
-	same[a] = b
-	same[b] = a
-	local count = 0
-	for k, v in pairs(a) do
-		count = count + 1
-		assert(type(k) ~= "table")
-		assert_same(v, b[k], same)
-	end
-	for _ in pairs(b) do
-		count = count - 1
-	end
-	assert(count == 0)
+local function assert_same(a, b)
+	return modlib.table.same(a, b)
 end
 
 local function serializer_test(is_json, preserve)
