@@ -69,6 +69,13 @@ do
 	assert(memo.test == false)
 end
 
+-- less than utils
+do
+	local t = {{field = 1}, {field = 2}, {field = 3}}
+	_G.table.sort(t, less_than.gt(less_than.by_field"field"))
+	assert(table.equals(t, {{field = 3}, {field = 2}, {field = 1}}))
+end
+
 -- iterator
 do
 	local function assert_equals_list(list, ...)
