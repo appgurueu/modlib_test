@@ -155,6 +155,23 @@ assert(table.equals(iterator.to_table(text.ibytes("hello")),
 assert(table.equals(iterator.to_list(text.lines("\r\n2\n\n4\r5\r\n")),
 	{"", "2", "", "4", "5"}))
 
+-- utf8
+for codepoint = 0, 0x10FFFF do
+	assert(utf8.codepoint(utf8.char(codepoint)) == codepoint)
+end
+for _ = 1, 10 do
+	local codepoints = {}
+	for i = 1, random(100) do
+		codepoints[i] = random(0x10FFFF)
+	end
+	local i = 0
+	for _, codepoint in utf8.codes(utf8.char(unpack(codepoints))) do
+		i = i + 1
+		assert(codepoints[i] == codepoint)
+	end
+	assert(#codepoints == i)
+end
+
 -- table
 do
 	local tab = {}
