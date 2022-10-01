@@ -176,6 +176,40 @@ do
 	assert(nilget({a = {}}, "a", "b", "c") == nil)
 	assert(nilget(nil, "a", "b", "c") == nil)
 	assert(nilget(nil, "a", nil, "c") == nil)
+	assert(table.min_key(table.set{-3, 1, 2, -42}) == -42)
+	assert(table.min_value{-3, 1, 2, -42} == -42)
+	assert(table.equals(table.slice({1, 2, 3, 4, 5},
+		2, -- start index
+		4 -- end index
+	), {2, 3, 4}))
+	do
+		assert(table.equals(table.splice({1, 42, 5},
+			2, -- start index
+			1, -- delete count
+			2, 3, 4 -- elements to add
+		), {1, 2, 3, 4, 5}))
+		assert(table.equals(table.splice(
+			{1, 42, 42, 3, 4, 5},
+			2, -- start index
+			2, -- delete count
+			2 -- element to add
+		), {1, 2, 3, 4, 5}))
+		assert(table.equals(table.splice(
+			{1, 2, 3, 4, 5},
+			2, -- start index
+			3 -- delete count
+		), {1, 5}))
+	end
+	do
+		local t = {1, 2, 3}
+		table.move(t, 1, 4, 3)
+		assert(table.equals(t, {1, 2, 3, 1, 2, 3}))
+		table.move(t, 6, 3, 3)
+		assert(table.equals(t, {1, 2, 3}))
+		local c = {}
+		table.move(t, 1, 1, #t, c)
+		assert(table.equals(t, c))
+	end
 	do
 		local deepset = table.deepset
 		local t = {}
