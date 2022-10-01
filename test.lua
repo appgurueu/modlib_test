@@ -71,8 +71,36 @@ end
 
 -- iterator
 do
+	local function assert_equals_list(list, ...)
+		assert(table.equals(list, iterator.to_list(...)))
+	end
+	local function assert_equals_table(list, ...)
+		assert(table.equals(list, iterator.to_table(...)))
+	end
 	local range = iterator.range
+	assert(not iterator.empty(range(1, 3)))
+	assert(iterator.first(range(2, 3)) == 2)
+	assert(iterator.last(range(1, 10)) == 10)
 	assert(iterator.aggregate(func.add, 0, range(1, 3)) == 6)
+	assert(iterator.select(42, range(1, 100)) == 42)
+	local closure = iterator.wrap(range(1, 100))
+	assert(closure() == 1 and closure() == 2)
+	assert(iterator.last(closure) == 100)
+	assert_equals_list({2, 4, 6, 8, 10}, iterator.filter(
+		function(x) return x % 2 == 0 end,
+		range(1, 10)))
+	assert_equals_list({true, 1, "yay"}, iterator.truthy(table.ivalues{false, true, 1, "yay", false}))
+	assert_equals_list({false, false}, iterator.falsy(table.ivalues{false, true, 1, false}))
+	assert_equals_list({"\1\11", "\2\22", "\3\33"}, iterator.map(
+			_G.string.char,
+			ipairs{11, 22, 33}))
+	assert_equals_table({a = 1 * 42, b = 2 * 42, c = 3 * 42}, iterator.map_values(
+		function(x) return x * 42 end,
+		pairs{a = 1, b = 2, c = 3}))
+	assert_equals_list({1, 2, 3, 1, 2, 3, 1, 2, 3}, iterator.rep(3, range(1, 3)))
+	assert_equals_table({42, 33}, iterator.limit(2, ipairs{42, 33, 101}))
+	assert(iterator.reduce(func.add, range(1, 3)) == 6)
+	assert(select("#", iterator.reduce(func.add, function()end)) == 0)
 	assert(iterator.sum(range(1, 3)) == 6)
 	assert(iterator.min(func.lt, range(1, 3)) == 1)
 	assert(iterator.count(range(1, 3)) == 3)
