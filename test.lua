@@ -664,7 +664,8 @@ end
 
 if not _G.minetest then return end
 
-assert(minetest.luon:read_string(minetest.luon:write_string(ItemStack"")))
+local stack = ItemStack"default:dirt 42"
+assert(minetest.luon:read_string(minetest.luon:write_string(stack)):to_string() == stack:to_string())
 
 -- colorspec
 local colorspec = minetest.colorspec
