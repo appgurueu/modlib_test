@@ -30,6 +30,12 @@ do
 		assert(math.log(2^i) == _G.math.log(2^i))
 		assert(math.log(2^i, 2) == log)
 	end
+	-- fround
+	assert(math.fround(0.999999999999996114) == 1)
+	for _ = 1, 1e3 do
+		local rnd_num = (_G.math.random() - 0.5) * 2^math.random(-100, 100)
+		assert(_G.math.abs(math.fround(rnd_num) - rnd_num) / rnd_num < 2^-22)
+	end
 	-- random tests
 	local n = 1e6
 	local function test_avg(min, max, int, ...)
