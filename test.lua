@@ -16,6 +16,14 @@ setfenv(1, setmetatable({}, {
 	end
 }))
 
+local function random_charcodes(count)
+	if count == 0 then return end
+	return random(0, 0xFF), random_charcodes(count - 1)
+end
+local function random_str(min, max)
+	return _G.string.char(random_charcodes(random(min, max)))
+end
+
 -- math
 do
 	local function assert_tonumber(num, base)
@@ -465,15 +473,8 @@ local function serializer_test(is_json, preserve)
 		assert(nan ~= nan)
 	end
 	-- Strings
-	local function charcodes(count)
-		if count == 0 then return end
-		return random(0, 0xFF), charcodes(count - 1)
-	end
-	local function str()
-		return _G.string.char(charcodes(random(0, 100)))
-	end
 	for _ = 1, 1e3 do
-		assert_preserves(str())
+		assert_preserves(random_str(0, 100))
 	end
 	-- Numbers
 	for _, num in pairs{
@@ -493,6 +494,9 @@ local function serializer_test(is_json, preserve)
 	local function num()
 		if random() < 0.5 then return int() end
 		return int() * 2^random(-150, 150)
+	end
+	local function str()
+		return random_str(0, 100)
 	end
 	for _ = 1, 1e3 do
 		assert_preserves(num())
@@ -656,6 +660,38 @@ do -- binary tests: float reading & writing
 		assert(preserve_double(float) == float)
 	end
 	-- TODO test against other implementations (binarystream etc.)
+end
+
+-- base64
+do
+	-- 0 padding
+	assert(base64.encode"lua is awesome!" == "bHVhIGlzIGF3ZXNvbWUh")
+	assert(base64.encode("lua is awesome!", false) == "bHVhIGlzIGF3ZXNvbWUh")
+	-- 1 padding
+	assert(base64.encode"base64 encoding is working" == "YmFzZTY0IGVuY29kaW5nIGlzIHdvcmtpbmc=")
+	assert(base64.encode("base64 encoding is working", false) == "YmFzZTY0IGVuY29kaW5nIGlzIHdvcmtpbmc")
+	-- 2 padding
+	assert(base64.encode"never gonna give you up.." == "bmV2ZXIgZ29ubmEgZ2l2ZSB5b3UgdXAuLg==")
+	assert(base64.encode("never gonna give you up..", false) == "bmV2ZXIgZ29ubmEgZ2l2ZSB5b3UgdXAuLg")
+	-- decoding should reject invalid input
+	assert(not pcall(base64.decode, "$%&"))
+	-- round trip
+	assert(base64.decode(base64.encode"hello world") == "hello world", base64.decode(base64.encode"hello world"))
+	for _ = 1, 100 do
+		local str = random_str(10, 100)
+		local with_padding, without_padding = base64.encode(str), base64.encode(str, false)
+		-- Lax decoding should accept both
+		assert(base64.decode(with_padding) == str)
+		assert(base64.decode(without_padding) == str)
+		-- Strict decoding
+		assert(base64.decode(with_padding, true) == str) -- expects padding
+		assert(base64.decode(without_padding, false) == str) -- expects no padding
+		-- Invalid padding should be rejected
+		if with_padding ~= without_padding then
+			assert(not pcall(base64.decode, without_padding, true)) -- expects padding
+			assert(not pcall(base64.decode, with_padding, false)) -- expects no padding
+		end
+	end
 end
 
 do
