@@ -116,4 +116,5 @@ do
 	test_dims(math.floor(11 / 2), math.floor(22 / 2),
 		mine:sheet(2, 2, 1, 1))
 	test_dims(64, 64, texmod.inventorycube(mine, mine, test))
+	test_dims(2, 3, texmod.png(modlib.file.read(modlib.mod.get_resource("modlib_test", "minetest", "texmod", "2x3.png"))))
 end

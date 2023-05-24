@@ -3,7 +3,7 @@ modlib.mod.include"b3d.lua"
 for _ = 1, 2 do dofile(modlib.mod.get_resource"test.lua") end
 modlib.mod.include"obj.lua"
 -- Texture module tests
-dofile(modlib.mod.get_resource("modlib_test", "minetest", "texmod.lua"))
+dofile(modlib.mod.get_resource("modlib_test", "minetest", "texmod", "test.lua"))
 -- Extensive PngSuite tests
 dofile(modlib.mod.get_resource("modlib_test", "minetest", "png", "test.lua"))
 
