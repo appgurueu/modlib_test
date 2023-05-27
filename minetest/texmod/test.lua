@@ -39,6 +39,7 @@ local tests = {
 	["a^[transformR180"] = a:rotate(180),
 	["a^[transformR270"] = a:rotate(270),
 	["a^[transformR90R90R90"] = a:rotate(270),
+	["a^[transformfx"] = a:transform"fx",
 	["a^[transformFX"] = a:flip"x",
 	["a^[transformFXfy"] = a:flip"x":flip"y",
 	["a^[transform46"] = a:flip"y":flip"x",
