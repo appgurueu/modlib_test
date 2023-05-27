@@ -51,6 +51,7 @@ local tests = {
 	}),
 	["a^[colorize:red:alpha^[multiply:red^[resize:42x69"] = a:colorize(colorspec.from_string"red", "alpha"):multiply(colorspec.from_string"red"):resize(42, 69),
 	["a^[colorize:red:alpha"] = a:colorize(colorspec.from_string"red", "alpha"),
+	["blank.png^[noalpha^[colorize:#b8bab9"] = file"blank.png":noalpha():colorize(colorspec.from_string"#b8bab9"),
 	-- Modifiers which take textures as parameters
 	["a^[mask:b"] = a:mask(b),
 	["a^[mask:\\b"] = a:mask(b),
