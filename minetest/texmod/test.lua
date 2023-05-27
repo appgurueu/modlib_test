@@ -33,12 +33,15 @@ local tests = {
 	["a^[sheet:16x16:2,2"] = a:sheet(16, 16, 2, 2),
 	["a^[resize:42x69"] = a:resize(42, 69),
 	-- Transforms
-	["a^[transformI"] = a:transform(),
-	["a^[transform0"] = a:transform(),
+	["a^[transformI"] = a,
+	["a^[transform0"] = a,
 	["a^[transformR90"] = a:rotate(90),
 	["a^[transformR180"] = a:rotate(180),
 	["a^[transformR270"] = a:rotate(270),
+	["a^[transformR90R90R90"] = a:rotate(270),
 	["a^[transformFX"] = a:flip"x",
+	["a^[transformFXfy"] = a:flip"x":flip"y",
+	["a^[transform46"] = a:flip"y":flip"x",
 	-- Colors
 	["a^[multiply:red"] = a:multiply(colorspec.new{
 		r = 255,
