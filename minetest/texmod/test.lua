@@ -1,16 +1,15 @@
 local texmod = modlib.minetest.texmod
-local colorspec = modlib.minetest.colorspec
 local file = texmod.file
 local a, b, c, d, e, f = file"a", file"b", file"c", file"d", file"e", file"f"
 local tests = {
-	-- Overlay
-	["a^b"] = a:overlay(b),
+	-- "Blit"
+	["a^b"] = a:blit(b),
 	-- Associativity
-	["a^b^c"] = a:overlay(b):overlay(c),
+	["a^b^c"] = a:blit(b):blit(c),
 	-- Parentheses
 	["(((a)))"] = a,
-	["a^(b^c)"] = a:overlay(b:overlay(c)),
-	["(a^b)^(c^d)"] = a:overlay(b):overlay(c:overlay(d)),
+	["a^(b^c)"] = a:blit(b:blit(c)),
+	["(a^b)^(c^d)"] = a:blit(b):blit(c:blit(d)),
 	-- Base texture modifiers
 	-- Param-less
 	["a^[noalpha"] = a:noalpha(),
@@ -44,38 +43,39 @@ local tests = {
 	["a^[transformFXfy"] = a:flip"x":flip"y",
 	["a^[transform46"] = a:flip"y":flip"x",
 	-- Colors
-	["a^[multiply:red"] = a:multiply(colorspec.new{
-		r = 255,
-		g = 0,
-		b = 0,
-		a = 255
-	}),
-	["a^[colorize:red:alpha^[multiply:red^[resize:42x69"] = a:colorize(colorspec.from_string"red", "alpha"):multiply(colorspec.from_string"red"):resize(42, 69),
-	["a^[colorize:red:alpha"] = a:colorize(colorspec.from_string"red", "alpha"),
-	["blank.png^[noalpha^[colorize:#b8bab9"] = file"blank.png":noalpha():colorize(colorspec.from_string"#b8bab9"),
+	["a^[multiply:red"] = a:multiply"red",
+	["a^[colorize:red:alpha^[multiply:red^[resize:42x69"] = a:colorize("red", "alpha"):multiply"red":resize(42, 69),
+	["a^[colorize:red:alpha"] = a:colorize("red", "alpha"),
+	["blank.png^[noalpha^[colorize:#b8bab9"] = file"blank.png":noalpha():colorize"#b8bab9",
+	["a^[colorizehsl:42:69:-10"] = a:colorizehsl(42, 69, -10),
+	["a^[hsl:42:200:69"] = a:hsl(42, 200, 69),
+	["a^[contrast:42:-42"] = a:contrast(42, -42),
+	["a^[screen:blue"] = a:screen"blue",
 	-- Modifiers which take textures as parameters
 	["a^[mask:b"] = a:mask(b),
+	["a^[hardlight:b"] = a:hardlight(b),
+	["a^[overlay:b"] = a:overlay(b),
 	["a^[mask:\\b"] = a:mask(b),
 	[ [[a^[mask:b\^[mask\:c\\^[mask\\:d]] ] = a:mask(b:mask(c:mask(d))),
 	-- unnecessary escaping
 	["a^[lowpart:42:b"] = a:lowpart(42, b),
-	["a^[lowpart:42:b^c"] = a:lowpart(42, b):overlay(c),
-	["a^[lowpart:42:b\\^c"] = a:lowpart(42, b:overlay(c)),
+	["a^[lowpart:42:b^c"] = a:lowpart(42, b):blit(c),
+	["a^[lowpart:42:b\\^c"] = a:lowpart(42, b:blit(c)),
 	["a^[transformR90^[lowpart:50:b\\^[transformR90^[transformR270"] = a:rotate(90):lowpart(50, b:rotate(90)):rotate(270),
 	-- Base-generating texture modifiers
 	["[png:" .. minetest.encode_base64"test"] = texmod.png"test",
 	["[inventorycube{a{b{c"] = texmod.inventorycube(a, b, c),
-	["[inventorycube{a{b{c^d"] = texmod.inventorycube(a, b, c):overlay(d),
-	["[inventorycube{a{b{c&d"] = texmod.inventorycube(a, b, c:overlay(d)),
+	["[inventorycube{a{b{c^d"] = texmod.inventorycube(a, b, c):blit(d),
+	["[inventorycube{a{b{c&d"] = texmod.inventorycube(a, b, c:blit(d)),
 	-- Overlaying a base-generating texture modifier
-	["[inventorycube{a{b{c^[inventorycube{d{e{f"] = texmod.inventorycube(a, b, c):overlay(texmod.inventorycube(d, e, f)),
+	["[inventorycube{a{b{c^[inventorycube{d{e{f"] = texmod.inventorycube(a, b, c):blit(texmod.inventorycube(d, e, f)),
 	["[combine:42x69:"] = texmod.combine(42, 69, {}),
 	["[combine:8x8:-8,-8=a"] = texmod.combine(8, 8, { { x = -8, y = -8, texture = a } }),
 	["[combine:42x69:1,2=a:3,4=b"] = texmod.combine(42, 69, { { x = 1, y = 2, texture = a }, { x = 3, y = 4, texture = b } }),
-	["[combine:42x69:1,2=a^b"] = texmod.combine(42, 69, { { x = 1, y = 2, texture = a } }):overlay(b),
-	["[combine:42x69:1,2=a\\^b"] = texmod.combine(42, 69, { { x = 1, y = 2, texture = a:overlay(b) } }),
+	["[combine:42x69:1,2=a^b"] = texmod.combine(42, 69, { { x = 1, y = 2, texture = a } }):blit(b),
+	["[combine:42x69:1,2=a\\^b"] = texmod.combine(42, 69, { { x = 1, y = 2, texture = a:blit(b) } }),
 	["[combine:42x69:1,2=a\\^[multiply\\:red"] = texmod.combine(42, 69, {
-		{ x = 1, y = 2, texture = a:multiply(colorspec.from_string"red") }
+		{ x = 1, y = 2, texture = a:multiply"red" }
 	}),
 	["[combine:42x69:1,2=[combine\\:33x99\\:3,4=a"] = texmod.combine(42, 69, {
 		{
@@ -91,7 +91,9 @@ local tests = {
 			y = 0,
 			texture = texmod.combine(128, 48, { { x = 0, y = 0, texture = b } })
 		}
-	})
+	}),
+	["[fill:42x43:#AABBCCDD"] = texmod.fill(42, 43, "#AABBCCDD"),
+	["a^[fill:42x43:10,11:green"] = a:fill(42, 43, 10, 11, "green"),
 }
 for str, tm in pairs(tests) do
 	local parsed_tm = texmod.read_string(str)
@@ -112,14 +114,18 @@ do
 		assert(w == got_w and h == got_h)
 	end
 	test_dims(42, 69, texmod.combine(42, 69, {}))
-	test_dims(44, 33, test:brighten():noalpha())
+	test_dims(44, 33, test:brighten():noalpha():screen"red")
 	test_dims(42, 69, test:resize(42, 69))
 	test_dims(42, 69, test:resize(42, 69))
+	test_dims(44, 33, mine:blit(test))
 	test_dims(44, 33, mine:overlay(test))
+	test_dims(44, 33, mine:hardlight(test))
 	test_dims(33, 44, test:rotate(90))
 	test_dims(44, 11, test:verticalframe(3, 1))
 	test_dims(math.floor(11 / 2), math.floor(22 / 2),
 		mine:sheet(2, 2, 1, 1))
 	test_dims(64, 64, texmod.inventorycube(mine, mine, test))
 	test_dims(2, 3, texmod.png(modlib.file.read(modlib.mod.get_resource("modlib_test", "minetest", "texmod", "2x3.png"))))
+	test_dims(42, 43, texmod.fill(42, 43, "red"))
+	test_dims(11, 22, mine:fill(2, 3, 4, 5, "green"))
 end
