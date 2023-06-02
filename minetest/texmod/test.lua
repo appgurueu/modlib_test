@@ -100,6 +100,11 @@ for str, tm in pairs(tests) do
 	assert(modlib.table.equals_noncircular(tm, parsed_tm))
 	assert(modlib.table.equals_noncircular(tm, texmod.read_string(tostring(tm))))
 end
+-- Test warning for `^` inside `(...)`
+assert(not pcall(texmod.read_string, "a^[mask:(b^c)"))
+assert(modlib.table.equals_noncircular(
+	a:mask(b:blit(c)),
+	texmod.read_string("a^[mask:(b^c)", function()end)))
 do
 	local test_file_dims = {
 		["mine.png"] = {11, 22},
