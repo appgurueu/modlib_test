@@ -69,6 +69,22 @@ do
 	test_avg(1e3, 1e6, true, 1e3, 1e6)
 end
 
+-- mat4
+do
+	local v = vector.new{1, 2, 3, 4}
+	local m = matrix4.new{
+		{1, 2, 3, 4},
+		{5, 6, 7, 8},
+		{9, 10, 11, 12},
+		{13, 14, 15, 16},
+	}
+	assert(m:apply(v) ==
+		vector.new{1, 5, 9, 13}:multiply_scalar(1)
+		+ vector.new{2, 6, 10, 14}:multiply_scalar(2)
+		+ vector.new{3, 7, 11, 15}:multiply_scalar(3)
+		+ vector.new{4, 8, 12, 16}:multiply_scalar(4))
+end
+
 -- func
 do
 	local called = false
