@@ -28,7 +28,7 @@ local expected_errs = {
 	["xs7n0g01.png"]="PNG signature expected"
 }
 for filename, errmsg in pairs(expected_errs) do
-	local file = io.open(path .. "/" .. filename, "r")
+	local file = io.open(path .. "/" .. filename, "rb")
 	local status, error = pcall(modlib.minetest.decode_png, file)
 	file:close()
 	assert(not status, error:find(errmsg))
@@ -41,7 +41,7 @@ local files = {}
 
 for _, filename in pairs(minetest.get_dir_list(path, false)) do
 	if modlib.text.ends_with(filename, ".png") and not expected_errs[filename] then
-		local file = io.open(path .. "/" .. filename, "r")
+		local file = io.open(path .. "/" .. filename, "rb")
 		local png = modlib.minetest.decode_png(file)
 		file:close()
 		modlib.minetest.convert_png_to_argb8(png)
